@@ -6,6 +6,7 @@ export default defineConfig(({ mode }) => {
   const supabaseUrl = env.VITE_SUPABASE_URL || 'https://gqeodtqsjctqplsufspp.supabase.co'
 
   return {
+    base: '/',
     plugins: [react()],
     server: {
       host: '0.0.0.0',
