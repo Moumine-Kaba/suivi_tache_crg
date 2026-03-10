@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { DIRECTION_OPTIONS, getServiceOptions } from '../constants/directions'
 import { ROLES_CONFIG, FINANCE_ROLES } from '../constants/roles'
-import { Users as UsersIcon, UserPlus, Edit, Trash2, Building2, Shield, Mail, Calendar, Search, AlertCircle, CheckCircle2, X, User, Lock, Briefcase, MapPin, Info, CheckCircle, UserX, Eye, Clock } from 'lucide-react'
+import { Users as UsersIcon, UserPlus, Edit, Trash2, Building2, Shield, Mail, Calendar, Search, AlertCircle, CheckCircle2, X, User, Lock, Briefcase, MapPin, Info, CheckCircle, UserX, Eye, Clock, Copy } from 'lucide-react'
 import Card from '../components/ui/Card'
 import Button from '../components/ui/Button'
 import Badge from '../components/ui/Badge'
@@ -42,6 +42,8 @@ export default function Users() {
   const [deactivatingId, setDeactivatingId] = useState(null)
   const [reactivatingId, setReactivatingId] = useState(null)
   const [detailUser, setDetailUser] = useState(null)
+  const [credentialsData, setCredentialsData] = useState(null)
+  const [copiedField, setCopiedField] = useState(null)
   const { register, handleSubmit, reset, formState: { errors }, watch, setValue } = useForm({
     defaultValues: { role: 'employe' }
   })
@@ -287,20 +289,15 @@ export default function Users() {
         const displayName = createPayload.name || createPayload.email
         console.log('✅ Utilisateur créé avec succès:', newUser)
 
-        if (newUser.emailSent) {
-          setSuccess(`✅ Utilisateur "${displayName}" créé ! Un email avec les identifiants a été envoyé à ${createPayload.email}. L'utilisateur devra changer son mot de passe à la première connexion.`)
-        } else if (newUser.authCreated) {
-          const emailErr = newUser.emailError
-            ? ` L'email n'a pas été envoyé : ${newUser.emailError}`
-            : ' L\'email n\'a pas pu être envoyé (vérifiez RESEND_API_KEY dans Supabase).'
-          setSuccess(`✅ Utilisateur "${displayName}" créé ! Mot de passe temporaire : ${tempPassword} — Communiquez-le à l'utilisateur.${emailErr}`)
-        } else {
-          setSuccess(`⚠️ Utilisateur "${displayName}" créé en base. Mot de passe temporaire : ${tempPassword} — Créez manuellement le compte Auth avec cet email et ce mot de passe.`)
-        }
         setShowModal(false)
         reset()
         await loadUsers()
-        setTimeout(() => setSuccess(null), 10000) // 10s pour noter le mot de passe
+        if (newUser.authCreated) {
+          setCredentialsData({ displayName, email: createPayload.email, tempPassword })
+        } else {
+          setSuccess(`⚠️ Utilisateur "${displayName}" créé en base. Mot de passe temporaire : ${tempPassword} — Créez manuellement le compte Auth avec cet email et ce mot de passe.`)
+          setTimeout(() => setSuccess(null), 8000)
+        }
       }
     } catch (err) {
       console.error('❌ Erreur lors de la sauvegarde:', err)
@@ -1056,6 +1053,96 @@ export default function Users() {
                     Réinitialiser
                   </span>
                 )}
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* Modal identifiants temporaires (après création utilisateur) */}
+      <Modal
+        isOpen={!!credentialsData}
+        onClose={() => { setCredentialsData(null); setCopiedField(null) }}
+        title="Identifiants de connexion temporaires"
+        size="md"
+      >
+        {credentialsData && (
+          <div className="space-y-5">
+            <div className="flex items-center gap-3 p-4 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/50">
+              <div className="p-2.5 rounded-xl bg-emerald-100 dark:bg-emerald-800/40">
+                <CheckCircle size={24} className="text-emerald-600 dark:text-emerald-400" />
+              </div>
+              <div>
+                <p className="font-semibold text-emerald-800 dark:text-emerald-200">Utilisateur créé avec succès</p>
+                <p className="text-sm text-emerald-700 dark:text-emerald-300">Communiquez ces identifiants à {credentialsData.displayName}. Il devra changer le mot de passe à sa première connexion.</p>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Email de connexion</label>
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 px-4 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 font-mono text-sm">
+                    {credentialsData.email}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText(credentialsData.email)
+                      setCopiedField('email')
+                      setTimeout(() => setCopiedField(null), 2000)
+                    }}
+                    className="p-3 rounded-xl bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                    title="Copier l'email"
+                  >
+                    {copiedField === 'email' ? <CheckCircle size={18} className="text-emerald-600" /> : <Copy size={18} className="text-gray-600 dark:text-gray-300" />}
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Mot de passe temporaire</label>
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 px-4 py-3 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50 font-mono text-sm tracking-wider">
+                    {credentialsData.tempPassword}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText(credentialsData.tempPassword)
+                      setCopiedField('password')
+                      setTimeout(() => setCopiedField(null), 2000)
+                    }}
+                    className="p-3 rounded-xl bg-amber-100 dark:bg-amber-900/30 hover:bg-amber-200 dark:hover:bg-amber-800/40 transition-colors"
+                    title="Copier le mot de passe"
+                  >
+                    {copiedField === 'password' ? <CheckCircle size={18} className="text-emerald-600" /> : <Copy size={18} className="text-amber-700 dark:text-amber-300" />}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <Button
+                type="button"
+                variant="primary"
+                className="flex-1"
+                onClick={() => {
+                  const text = `Identifiants de connexion - ${credentialsData.displayName}\n\nEmail : ${credentialsData.email}\nMot de passe temporaire : ${credentialsData.tempPassword}\n\nÀ changer à la première connexion.`
+                  navigator.clipboard.writeText(text)
+                  setCopiedField('all')
+                  setTimeout(() => setCopiedField(null), 2000)
+                }}
+              >
+                {copiedField === 'all' ? <CheckCircle size={18} className="mr-2" /> : <Copy size={18} className="mr-2" />}
+                {copiedField === 'all' ? 'Copié !' : 'Copier tout'}
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => { setCredentialsData(null); setCopiedField(null) }}
+              >
+                J'ai terminé
               </Button>
             </div>
           </div>

@@ -206,63 +206,8 @@ serve(async (req) => {
     }
 
     const u = userData || {}
-    // Envoyer l'email avec les identifiants temporaires à l'utilisateur
-    // Destinataire (to) = email saisi dans le formulaire
-    // Expéditeur (from) = domaine dérivé de l'email utilisateur (ex: noreply@creditruralgn.com)
-    let emailSent = false
-    let emailError: string | null = null
-    const resendApiKey = Deno.env.get('RESEND_API_KEY')
-    const userDomain = email.includes('@') ? email.split('@')[1] : 'creditruralgn.com'
-    const fromEmail = Deno.env.get('EMAIL_FROM') || `Crédit Rural <noreply@${userDomain}>`
-    if (resendApiKey) {
-      try {
-        const appUrl = Deno.env.get('APP_URL') || 'https://missions.crg.gn'
-        const html = `
-<!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"><style>body{font-family:Arial,sans-serif;line-height:1.6;color:#333;max-width:600px;margin:0 auto;padding:20px;}h1{color:#006020;}strong{color:#006020;}.box{background:#f5f5f5;padding:15px;border-radius:8px;margin:15px 0;font-family:monospace;}.warning{background:#fff3cd;padding:10px;border-radius:6px;margin:15px 0;}.footer{font-size:12px;color:#666;margin-top:30px;}</style></head>
-<body>
-<h1>Bienvenue sur la plateforme Crédit Rural de Guinée</h1>
-<p>Bonjour <strong>${displayName}</strong>,</p>
-<p>Votre compte a été créé par l'administrateur. Voici vos identifiants de connexion temporaires :</p>
-<div class="box">
-<p><strong>Email :</strong> ${email}</p>
-<p><strong>Mot de passe temporaire :</strong> ${password}</p>
-</div>
-<div class="warning">
-<strong>⚠️ Important :</strong> Vous devrez changer ce mot de passe lors de votre première connexion pour des raisons de sécurité.
-</div>
-<p><a href="${appUrl}/login" style="display:inline-block;background:#006020;color:white;padding:12px 24px;text-decoration:none;border-radius:6px;margin-top:10px;">Se connecter</a></p>
-<p class="footer">Cet email a été envoyé automatiquement. Ne partagez pas vos identifiants. Si vous n'avez pas demandé ce compte, contactez l'administrateur.</p>
-</body>
-</html>`
-        const res = await fetch('https://api.resend.com/emails', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${resendApiKey}`,
-          },
-          body: JSON.stringify({
-            from: fromEmail,
-            to: [email],
-            subject: 'Vos identifiants de connexion - Crédit Rural de Guinée',
-            html,
-          }),
-        })
-        if (res.ok) {
-          emailSent = true
-        } else {
-          const errData = await res.json().catch(() => ({})) as { message?: string }
-          emailError = errData?.message || `Resend API: ${res.status}`
-          console.warn('Envoi email Resend échoué:', res.status, errData)
-        }
-      } catch (emailErr) {
-        emailError = (emailErr as Error)?.message || 'Erreur envoi email'
-        console.warn('Erreur envoi email identifiants:', emailErr)
-      }
-    } else {
-      emailError = 'RESEND_API_KEY non configuré dans Supabase'
-    }
+    // Pas d'envoi d'email : l'admin communique le mot de passe temporaire à l'utilisateur.
+    // À la première connexion, l'utilisateur devra changer son mot de passe.
 
     // Audit log
     try {
@@ -309,8 +254,6 @@ serve(async (req) => {
           updatedAt: u.updated_at,
         },
         authCreated: true,
-        emailSent,
-        emailError: emailError || undefined,
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
