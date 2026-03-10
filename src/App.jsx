@@ -130,10 +130,10 @@ function App() {
     }
   }, [isAuthenticated, user, logout, loadTasks, loadDashboard, loadNotifications])
 
-  // Vérifier si une déconnexion explicite a été effectuée
-  // Si oui, ne pas rediriger automatiquement vers le dashboard
+  // Rediriger /login vers dashboard seulement si connecté ET pas de changement MDP requis
+  // (sinon on garde l'utilisateur sur /login pour le formulaire de changement de mot de passe)
   const explicitLogout = sessionStorage.getItem('crg-explicit-logout')
-  const shouldRedirect = isAuthenticated && explicitLogout !== 'true'
+  const shouldRedirectFromLogin = isAuthenticated && !user?.mustChangePassword && explicitLogout !== 'true'
 
   return (
     <BrowserRouter>
@@ -142,7 +142,7 @@ function App() {
         <Route
           path="/login"
           element={
-            shouldRedirect ? <Navigate to="/dashboard" replace /> : <Login />
+            shouldRedirectFromLogin ? <Navigate to="/dashboard" replace /> : <Login />
           }
         />
         <Route path="/reset-password" element={<ResetPassword />} />
