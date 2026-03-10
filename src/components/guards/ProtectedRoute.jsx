@@ -12,9 +12,9 @@ export default function ProtectedRoute({ children, requiredRole = null }) {
     return <Navigate to="/login" replace />
   }
 
-  // Première connexion : changement de mot de passe obligatoire
-  if (user?.mustChangePassword && !location.pathname.startsWith('/change-password-initiale')) {
-    return <Navigate to="/change-password-initiale" replace />
+  // Première connexion : redirection vers /login (le formulaire changement MDP remplace le login)
+  if (user?.mustChangePassword && location.pathname !== '/login') {
+    return <Navigate to="/login" replace />
   }
 
   // Vérifier le rôle si requis

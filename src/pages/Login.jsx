@@ -1,21 +1,22 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
-import { LogIn, Mail, Lock, AlertCircle, Eye, EyeOff, KeyRound, Sparkles } from 'lucide-react'
+import { LogIn, Mail, Lock, AlertCircle, Eye, EyeOff, KeyRound, Sparkles, Shield } from 'lucide-react'
 import useAuthStore from '../store/authStore'
 import { authService } from '../services/api'
 import Modal from '../components/ui/Modal'
 import Button from '../components/ui/Button'
+import { passwordValidator, PASSWORD_RULES } from '../utils/passwordValidation'
 import logoCRG from '../assets/logo_crg.png'
 
 /**
  * Page de connexion - Crédit Rural de Guinée
- * Inscription publique désactivée : seul l'administrateur peut créer les comptes.
+ * Si mustChangePassword : le formulaire login est remplacé par le formulaire de changement de mot de passe.
  */
 
 export default function Login() {
   const navigate = useNavigate()
-  const { login, isAuthenticated, logout } = useAuthStore()
+  const { login, isAuthenticated, logout, user, updateUser } = useAuthStore()
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
@@ -23,6 +24,9 @@ export default function Login() {
   const [forgotPasswordError, setForgotPasswordError] = useState('')
   const [forgotPasswordSuccess, setForgotPasswordSuccess] = useState('')
   const [isSendingReset, setIsSendingReset] = useState(false)
+  const [changePwdSuccess, setChangePwdSuccess] = useState('')
+  const [isChangingPassword, setIsChangingPassword] = useState(false)
+  const [showChangePwdPassword, setShowChangePwdPassword] = useState(false)
 
   // Vérifier si une déconnexion explicite a été effectuée
   // Si oui, forcer la déconnexion et ne pas rediriger
@@ -57,9 +61,10 @@ export default function Login() {
     try {
       const response = await authService.login(data.email, data.password)
       login(response.user, response.token, response.session)
-      // Première connexion : changement de mot de passe obligatoire
+      // Première connexion : rester sur /login et afficher le formulaire changement MDP
       if (response.mustChangePassword) {
-        navigate('/change-password-initiale', { replace: true })
+        setError('')
+        // Le formulaire login sera remplacé par le formulaire changement MDP
       } else {
         navigate('/dashboard')
       }
@@ -67,6 +72,34 @@ export default function Login() {
       setError(err.message || 'Une erreur est survenue lors de la connexion')
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const showChangePasswordForm = isAuthenticated && user?.mustChangePassword
+
+  const {
+    register: registerChangePwd,
+    handleSubmit: handleChangePwdSubmit,
+    watch: watchChangePwd,
+    formState: { errors: changePwdErrors },
+    reset: resetChangePwd,
+  } = useForm()
+
+  const changePwdPassword = watchChangePwd('password')
+
+  const onSubmitChangePassword = async (data) => {
+    setError('')
+    setChangePwdSuccess('')
+    setIsChangingPassword(true)
+    try {
+      await authService.changePasswordInitial(data.password)
+      updateUser({ mustChangePassword: false })
+      setChangePwdSuccess('Mot de passe modifié. Redirection...')
+      setTimeout(() => navigate('/dashboard', { replace: true }), 1200)
+    } catch (err) {
+      setError(err.message || 'Erreur lors du changement de mot de passe')
+    } finally {
+      setIsChangingPassword(false)
     }
   }
 
@@ -243,22 +276,28 @@ export default function Login() {
             </div>
             <div className="flex items-center gap-2 mb-4">
               <h2 className="font-extrabold text-gray-900 dark:text-white tracking-tight text-2xl sm:text-3xl lg:text-4xl">
-                Bienvenue
+                {showChangePasswordForm ? 'Nouveau mot de passe requis' : 'Bienvenue'}
               </h2>
               <span className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-700 dark:text-emerald-300">
                 Sécurisé
               </span>
             </div>
             <p className="text-gray-500 dark:text-gray-400 max-w-sm leading-snug text-sm mb-0">
-              Connectez-vous pour accéder à votre espace de travail
+              {showChangePasswordForm
+                ? 'Pour des raisons de sécurité, définissez un mot de passe personnel.'
+                : 'Connectez-vous pour accéder à votre espace de travail'}
             </p>
           </div>
           <div className="sm:hidden relative flex-shrink-0 mb-6">
-            <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">Connexion</h2>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Entrez vos identifiants</p>
+            <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">
+              {showChangePasswordForm ? 'Nouveau mot de passe' : 'Connexion'}
+            </h2>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+              {showChangePasswordForm ? 'Définissez votre mot de passe' : 'Entrez vos identifiants'}
+            </p>
           </div>
 
-          {/* Message d'erreur connexion */}
+          {/* Message d'erreur */}
           {error && (
             <div
               role="alert"
@@ -272,7 +311,106 @@ export default function Login() {
             </div>
           )}
 
-          {/* Formulaire CONNEXION */}
+          {/* Message succès changement MDP */}
+          {changePwdSuccess && (
+            <div className="mb-6 py-4 px-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800/50 flex items-center gap-3 max-w-md w-full mx-auto">
+              <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center">
+                <Shield size={20} className="text-emerald-600 dark:text-emerald-400" />
+              </div>
+              <span className="text-sm font-medium text-emerald-800 dark:text-emerald-200">{changePwdSuccess}</span>
+            </div>
+          )}
+
+          {/* FORMULAIRE CHANGEMENT MOT DE PASSE (remplace le login) */}
+          {showChangePasswordForm ? (
+            <form onSubmit={handleChangePwdSubmit(onSubmitChangePassword)} className="max-w-md w-full mx-auto relative" noValidate>
+              <div className="mb-6 p-4 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50">
+                <h3 className="font-bold text-amber-900 dark:text-amber-100 flex items-center gap-2">
+                  <Shield size={20} />
+                  Nouveau mot de passe requis
+                </h3>
+                <p className="text-sm text-amber-800 dark:text-amber-200 mt-1">Pour des raisons de sécurité, définissez un mot de passe personnel.</p>
+              </div>
+
+              <div className="mb-4">
+                <label htmlFor="newPassword" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Nouveau mot de passe</label>
+                <div className="relative group">
+                  <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#006020] dark:group-focus-within:text-emerald-400 transition-colors pointer-events-none" />
+                  <input
+                    id="newPassword"
+                    type={showChangePwdPassword ? 'text' : 'password'}
+                    {...registerChangePwd('password', {
+                      required: 'Le mot de passe est requis',
+                      validate: passwordValidator,
+                    })}
+                    className={`w-full pl-11 pr-12 py-3 rounded-xl border-2 transition-all ${
+                      changePwdErrors.password
+                        ? 'border-red-400 dark:border-red-500 bg-red-50/50 dark:bg-red-950/20'
+                        : 'border-gray-200 dark:border-gray-600 bg-gray-50/80 dark:bg-gray-800/50 focus:border-[#006020] dark:focus:border-emerald-500'
+                    }`}
+                    placeholder="••••••••"
+                    autoFocus
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowChangePwdPassword(!showChangePwdPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-lg text-gray-400 hover:text-[#006020] dark:hover:text-emerald-400"
+                    aria-label={showChangePwdPassword ? 'Masquer' : 'Afficher'}
+                  >
+                    {showChangePwdPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+                {changePwdErrors.password && (
+                  <p className="mt-1.5 text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
+                    <AlertCircle size={14} /> {changePwdErrors.password.message}
+                  </p>
+                )}
+                <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400">{PASSWORD_RULES.join(' · ')}</p>
+              </div>
+
+              <div className="mb-4">
+                <label htmlFor="confirmNewPassword" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Confirmer le mot de passe</label>
+                <input
+                  id="confirmNewPassword"
+                  type={showChangePwdPassword ? 'text' : 'password'}
+                  {...registerChangePwd('confirmPassword', {
+                    required: 'Veuillez confirmer le mot de passe',
+                    validate: (v) => v === changePwdPassword || 'Les mots de passe ne correspondent pas',
+                  })}
+                  className={`w-full px-4 py-3 rounded-xl border-2 transition-all ${
+                    changePwdErrors.confirmPassword
+                      ? 'border-red-400 dark:border-red-500 bg-red-50/50 dark:bg-red-950/20'
+                      : 'border-gray-200 dark:border-gray-600 bg-gray-50/80 dark:bg-gray-800/50 focus:border-[#006020] dark:focus:border-emerald-500'
+                  }`}
+                  placeholder="••••••••"
+                />
+                {changePwdErrors.confirmPassword && (
+                  <p className="mt-1.5 text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
+                    <AlertCircle size={14} /> {changePwdErrors.confirmPassword.message}
+                  </p>
+                )}
+              </div>
+
+              <button
+                type="submit"
+                disabled={isChangingPassword}
+                className="w-full py-3.5 px-6 rounded-xl font-semibold text-white bg-[#006020] hover:bg-[#004d18] dark:bg-emerald-600 dark:hover:bg-emerald-700 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+              >
+                {isChangingPassword ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Modification...
+                  </>
+                ) : (
+                  <>
+                    <Shield size={18} />
+                    Définir mon mot de passe
+                  </>
+                )}
+              </button>
+            </form>
+          ) : (
+          /* Formulaire CONNEXION */
           <form onSubmit={handleSubmit(onSubmit)} className="max-w-md w-full mx-auto relative" noValidate>
             {/* Champ Email */}
             <div className="mb-4 animate-login-field" style={{ animationDelay: '0.05s' }}>
@@ -389,6 +527,7 @@ export default function Login() {
               Seul l&apos;administrateur peut créer les comptes utilisateurs.
             </p>
           </form>
+          )}
           </div>
           </div>
         </div>
