@@ -292,12 +292,12 @@ export default function Users() {
         setShowModal(false)
         reset()
         await loadUsers()
-        if (newUser.authCreated) {
-          setCredentialsData({ displayName, email: createPayload.email, tempPassword })
-        } else {
-          setSuccess(`⚠️ Utilisateur "${displayName}" créé en base. Mot de passe temporaire : ${tempPassword} — Créez manuellement le compte Auth avec cet email et ce mot de passe.`)
-          setTimeout(() => setSuccess(null), 8000)
-        }
+        setCredentialsData({
+          displayName,
+          email: createPayload.email,
+          tempPassword,
+          isAuthCreated: !!newUser.authCreated,
+        })
       }
     } catch (err) {
       console.error('❌ Erreur lors de la sauvegarde:', err)
@@ -1074,7 +1074,12 @@ export default function Users() {
               </div>
               <div>
                 <p className="font-semibold text-emerald-800 dark:text-emerald-200">Utilisateur créé avec succès</p>
-                <p className="text-sm text-emerald-700 dark:text-emerald-300">Communiquez ces identifiants à {credentialsData.displayName}. Il devra changer le mot de passe à sa première connexion.</p>
+                <p className="text-sm text-emerald-700 dark:text-emerald-300">
+                  Communiquez ces identifiants à {credentialsData.displayName}. Il devra changer le mot de passe à sa première connexion.
+                  {credentialsData.isAuthCreated === false && (
+                    <span className="block mt-2 text-amber-700 dark:text-amber-300 font-medium">⚠️ Créez manuellement le compte Auth avec cet email et ce mot de passe.</span>
+                  )}
+                </p>
               </div>
             </div>
 
