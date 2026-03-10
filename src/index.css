@@ -1,0 +1,989 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Palette CRG – vert institutionnel */
+    --bg-background: #f8faf8;
+    --bg-card: #ffffff;
+    --bg-input: #f0f4f0;
+    --bg-muted: #e8f0e8;
+    --bg-surface-1: #fafcfa;
+    --bg-surface-2: #eef4ee;
+    --border-color: #d4e4d4;
+    --text-foreground: #0d1f0d;
+    --text-muted: #4a5d4a;
+
+    --accent-primary: #006020;
+    --accent-primary-hover: #004d18;
+    --accent-success: #0d7a2e;
+    --accent-error: #c53030;
+    --text-on-primary: #ffffff;
+    --accent-primary-rgb: 0 96 32;
+    --accent-primary-hover-rgb: 0 77 24;
+    --accent-success-rgb: 13 122 46;
+    --accent-error-rgb: 197 48 48;
+
+    --radius-card: 16px;
+    --radius-control: 10px;
+    --space-card: 1.25rem;
+    --shadow-card: 0 4px 14px rgba(0, 96, 32, 0.06);
+    --shadow-block: 0 2px 6px rgba(0, 96, 32, 0.04);
+  }
+
+  html.dark {
+    --bg-background: #0c120c;
+    --bg-card: #141c14;
+    --bg-input: #1a241a;
+    --bg-muted: #1e2a1e;
+    --bg-surface-1: #161f16;
+    --bg-surface-2: #1a261a;
+    --border-color: #243324;
+    --text-foreground: #e8f0e8;
+    --text-muted: #8a9a8a;
+    --text-on-primary: #ffffff;
+
+    --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.35);
+    --shadow-block: 0 2px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  /* Thème clair – même effet vert que le dark */
+  aside {
+    background: linear-gradient(180deg, var(--bg-card) 0%, var(--bg-surface-1) 50%, var(--bg-background) 100%) !important;
+    box-shadow: 2px 0 12px rgba(0, 96, 32, 0.04), 0 0 1px var(--border-color) !important;
+  }
+
+  /* Forcer l’ensemble de l’app à utiliser la palette sombre en mode dark,
+     même si des classes Tailwind héritées (bg-white, bg-gray-*) subsistent */
+  html.dark .bg-white,
+  html.dark .bg-gray-50,
+  html.dark .bg-gray-100,
+  html.dark .bg-gray-200,
+  html.dark .bg-gray-800,
+  html.dark .bg-gray-900 {
+    background-color: var(--bg-card) !important;
+    border-color: var(--border-color) !important;
+  }
+
+  html.dark .text-gray-900,
+  html.dark .text-gray-800,
+  html.dark .text-gray-700,
+  html.dark .text-white {
+    color: var(--text-foreground) !important;
+  }
+
+  html.dark .text-gray-500,
+  html.dark .text-gray-400,
+  html.dark .text-gray-300,
+  html.dark .text-gray-200 {
+    color: var(--text-muted) !important;
+  }
+
+  html.dark .border-gray-200,
+  html.dark .border-gray-300,
+  html.dark .border-gray-700 {
+    border-color: var(--border-color) !important;
+  }
+
+  /* Sidebar et éléments associés en noir pur */
+  html.dark aside {
+    background: linear-gradient(180deg, var(--bg-card) 0%, var(--bg-background) 65%, var(--bg-background) 100%) !important;
+    border-color: var(--border-color) !important;
+    box-shadow: 0 0 0 1px var(--border-color), 0 10px 24px rgba(0, 0, 0, 0.3) !important;
+  }
+  html.dark aside[class*="bg-gradient"] {
+    background: linear-gradient(180deg, var(--bg-card) 0%, var(--bg-background) 65%, var(--bg-background) 100%) !important;
+  }
+  html.dark aside .bg-white,
+  html.dark aside .bg-gray-50,
+  html.dark aside .bg-gray-100,
+  html.dark aside .bg-gray-800,
+  html.dark aside .bg-gray-900 {
+    background-color: var(--bg-card) !important;
+    border-color: var(--border-color) !important;
+  }
+  html.dark aside .border-gray-200,
+  html.dark aside .border-gray-300,
+  html.dark aside .border-gray-700,
+  html.dark aside .border-gray-800 {
+    border-color: var(--border-color) !important;
+  }
+  html.dark aside .hover\:bg-gray-100:hover,
+  html.dark aside .hover\:bg-gray-200:hover,
+  html.dark aside .dark\:hover\:bg-gray-800:hover,
+  html.dark aside .dark\:hover\:bg-gray-900:hover {
+    background-color: var(--bg-muted) !important;
+  }
+
+  /* Zones logo + aperçu facture : fond blanc en mode sombre pour lisibilité */
+  html.dark .invoice-preview-bg,
+  html.dark .invoice-preview-bg .bg-white {
+    background-color: #ffffff !important;
+  }
+  html.dark .invoice-preview-bg {
+    color: #000 !important;
+  }
+  html.dark .invoice-preview-bg .text-muted-foreground {
+    color: #525252 !important;
+  }
+  html.dark .invoice-preview-bg .text-gray-600 {
+    color: #4b5563 !important;
+  }
+
+  /* Aperçu plein écran : contenu visible sans scroll */
+  .invoice-preview-fit {
+    overflow: hidden !important;
+  }
+
+  body {
+    @apply transition-colors overflow-x-hidden;
+    background: linear-gradient(180deg, #fafcfa 0%, #f0f8f0 40%, #eef4ee 100%) !important;
+    color: var(--text-foreground);
+  }
+
+  html.dark body {
+    background: linear-gradient(180deg, var(--bg-background) 0%, #0a100a 100%) !important;
+  }
+
+  html,
+  body,
+  #root {
+    min-height: 100vh;
+    height: 100%;
+  }
+
+  input,
+  textarea,
+  select {
+    background-color: var(--bg-input);
+    border: 1px solid var(--border-color);
+    color: var(--text-foreground);
+    border-radius: var(--radius-control);
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--text-muted);
+  }
+
+  input:focus,
+  textarea:focus,
+  select:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 2px rgb(var(--accent-primary-rgb) / 0.15);
+  }
+}
+
+/* Page Login – panneau branding (paysage rural CRG) */
+
+.login-brand-panel {
+  background: linear-gradient(180deg, #001a08 0%, #002a0e 25%, #003d14 60%, #004518 100%);
+}
+html.dark .login-brand-panel {
+  background: linear-gradient(180deg, #000f05 0%, #001a08 30%, #002a0e 100%);
+}
+
+/* Fond paysage */
+.login-landscape-bg {
+  background:
+    radial-gradient(ellipse 120% 80% at 50% 0%, rgba(0, 80, 30, 0.4) 0%, transparent 50%),
+    radial-gradient(ellipse 80% 60% at 80% 20%, rgba(0, 96, 32, 0.2) 0%, transparent 40%),
+    linear-gradient(180deg, #001a08 0%, #002a0e 20%, #003310 50%, #001f0a 100%);
+}
+
+/* Collines SVG animées */
+.login-hills { opacity: 0.97; }
+.login-hill {
+  transform-origin: bottom center;
+  animation: hill-float 10s ease-in-out infinite;
+}
+.login-hill-1 { animation-delay: 0s; }
+.login-hill-2 { animation-delay: -2s; }
+.login-hill-3 { animation-delay: -4s; }
+.login-hill-4 { animation-delay: -1s; }
+.login-hill-5 { animation-delay: -3s; }
+@keyframes hill-float {
+  0%, 100% { transform: translateY(0) scaleY(1); }
+  50% { transform: translateY(-4px) scaleY(1.008); }
+}
+
+/* Palmiers – sway léger */
+.login-palm {
+  transform-origin: bottom center;
+  animation: palm-sway 6s ease-in-out infinite;
+}
+.login-palm-1 { animation-delay: 0s; }
+.login-palm-2 { animation-delay: -1.5s; }
+.login-palm-3 { animation-delay: -3s; }
+@keyframes palm-sway {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(1.5deg); }
+  75% { transform: rotate(-1.5deg); }
+}
+
+/* Feuilles flottantes */
+.login-leaf {
+  animation: leaf-drift 12s ease-in-out infinite;
+}
+@keyframes leaf-drift {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); opacity: 0.2; }
+  33% { transform: translate(15px, -20px) rotate(15deg); opacity: 0.4; }
+  66% { transform: translate(-10px, -35px) rotate(-10deg); opacity: 0.3; }
+}
+
+/* Particules dorées */
+.login-particle {
+  animation: particle-float 5s ease-in-out infinite;
+  box-shadow: 0 0 8px rgba(251, 191, 36, 0.5);
+}
+@keyframes particle-float {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.5; }
+  25% { transform: translate(10px, -18px) scale(1.3); opacity: 1; }
+  50% { transform: translate(-8px, -30px) scale(0.85); opacity: 0.7; }
+  75% { transform: translate(15px, -12px) scale(1.15); opacity: 1; }
+}
+
+/* Rayon lumineux */
+.login-light-ray {
+  background: linear-gradient(108deg, transparent 0%, transparent 35%, rgba(255,255,255,0.06) 48%, transparent 62%, transparent 100%);
+}
+
+/* Texture grain – points fins */
+.login-grain {
+  background-image: radial-gradient(circle at 2px 2px, rgba(255,255,255,0.08) 0.5px, transparent 0);
+  background-size: 6px 6px;
+  opacity: 0.6;
+}
+
+/* Contenu – animation entrée */
+.login-content-reveal {
+  animation: content-reveal 1.2s ease-out;
+}
+@keyframes content-reveal {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Titre hero */
+.login-title-hero {
+  text-shadow: 0 2px 30px rgba(0,0,0,0.6), 0 4px 60px rgba(0,0,0,0.4), 0 0 1px rgba(0,0,0,0.8);
+}
+
+/* ========== Formulaire Login ========== */
+.login-form-pattern {
+  background-image: radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0);
+  background-size: 24px 24px;
+}
+
+.login-form-panel {
+  background:
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(0, 96, 32, 0.04) 0%, transparent 50%),
+    linear-gradient(180deg, #fafcfa 0%, #f5faf5 30%, #eef4ee 100%);
+}
+html.dark .login-form-panel {
+  background:
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(0, 96, 32, 0.08) 0%, transparent 50%),
+    linear-gradient(180deg, #0f1410 0%, #0a0f0a 100%);
+}
+
+.login-form-card {
+  background: linear-gradient(180deg, #ffffff 0%, #fafcfb 50%, #f8faf8 100%);
+  border-radius: 1.25rem;
+  box-shadow:
+    0 4px 24px rgba(0, 96, 32, 0.04),
+    0 1px 3px rgba(0, 0, 0, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    inset 0 -1px 0 rgba(0, 96, 32, 0.02);
+  border: 1px solid rgba(0, 96, 32, 0.08);
+  overflow: hidden;
+  transition: box-shadow 0.3s ease;
+}
+.login-form-card:hover {
+  box-shadow:
+    0 8px 32px rgba(0, 96, 32, 0.06),
+    0 2px 8px rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+html.dark .login-form-card {
+  background: linear-gradient(180deg, #141c14 0%, #0f1612 100%);
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(0, 96, 32, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(0, 96, 32, 0.12);
+}
+html.dark .login-form-card:hover {
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.35),
+    0 0 0 1px rgba(0, 96, 32, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+.login-logo-wrapper {
+  box-shadow: 0 2px 12px rgba(0, 96, 32, 0.08);
+}
+
+/* Champs formulaire login */
+.login-input {
+  border: 1.5px solid #e5e7eb;
+  border-radius: 0.75rem;
+  background: #fafafa;
+  color: #111827;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.login-input::placeholder {
+  color: #9ca3af;
+}
+.login-input:hover {
+  border-color: #d1d5db;
+  background: #ffffff;
+}
+.login-input:focus {
+  outline: none;
+  border-color: #006020;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(0, 96, 32, 0.12);
+}
+html.dark .login-input {
+  border-color: #374151;
+  background: rgba(31, 41, 55, 0.6);
+  color: #f9fafb;
+}
+html.dark .login-input:hover {
+  border-color: #4b5563;
+  background: rgba(31, 41, 55, 0.8);
+}
+html.dark .login-input:focus {
+  border-color: #10b981;
+  background: rgba(31, 41, 55, 0.9);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+}
+
+/* Bouton connexion */
+.login-submit-btn {
+  background: linear-gradient(135deg, #006020 0%, #005518 50%, #004d18 100%);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.login-submit-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #007a28 0%, #006020 50%, #004d18 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 96, 32, 0.4);
+}
+.login-submit-btn:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 4px 12px rgba(0, 96, 32, 0.3);
+}
+
+/* ========== Formulaire Login V2 – style underline minimal ========== */
+.login-input-v2 {
+  outline: none;
+  color: #111827;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+.login-input-v2::placeholder {
+  color: #9ca3af;
+}
+html.dark .login-input-v2 {
+  color: #f9fafb;
+}
+html.dark .login-input-v2::placeholder {
+  color: #6b7280;
+}
+
+.login-btn-v2 {
+  background: #006020;
+}
+.login-btn-v2:hover:not(:disabled) {
+  background: #004d18;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 96, 32, 0.3);
+}
+.login-btn-v2:active:not(:disabled) {
+  transform: translateY(0);
+}
+html.dark .login-btn-v2 {
+  background: #059669;
+}
+html.dark .login-btn-v2:hover:not(:disabled) {
+  background: #047857;
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+}
+
+/* ========== Formulaire Login V3 – design premium ========== */
+.login-input-v3 {
+  outline: none;
+  color: #111827;
+  font-size: 0.9375rem;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.login-input-v3::placeholder {
+  color: #9ca3af;
+}
+html.dark .login-input-v3 {
+  color: #f9fafb;
+}
+html.dark .login-input-v3::placeholder {
+  color: #6b7280;
+}
+
+.login-btn-v3 {
+  background: linear-gradient(135deg, #006020 0%, #005518 50%, #004d18 100%);
+  box-shadow: 0 4px 14px rgba(0, 96, 32, 0.25);
+}
+.login-btn-v3:hover:not(:disabled) {
+  background: linear-gradient(135deg, #007a28 0%, #006020 50%, #004d18 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 96, 32, 0.35);
+}
+.login-btn-v3:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 10px rgba(0, 96, 32, 0.3);
+}
+html.dark .login-btn-v3 {
+  background: linear-gradient(135deg, #059669 0%, #047857 50%, #03634a 100%);
+  box-shadow: 0 4px 14px rgba(5, 150, 105, 0.3);
+}
+html.dark .login-btn-v3:hover:not(:disabled) {
+  background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%);
+  box-shadow: 0 8px 24px rgba(5, 150, 105, 0.4);
+}
+
+.login-register-btn {
+  color: #006020;
+  background: rgba(0, 96, 32, 0.06);
+  border: 2px solid rgba(0, 96, 32, 0.2);
+}
+.login-register-btn:hover {
+  background: rgba(0, 96, 32, 0.1);
+  border-color: rgba(0, 96, 32, 0.35);
+  transform: translateY(-1px);
+}
+html.dark .login-register-btn {
+  color: #34d399;
+  background: rgba(16, 185, 129, 0.08);
+  border-color: rgba(16, 185, 129, 0.25);
+}
+html.dark .login-register-btn:hover {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.4);
+}
+
+/* Animations */
+@keyframes pulse-slow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+.animate-pulse-slow { animation: pulse-slow 5s ease-in-out infinite; }
+
+@keyframes shimmer-glow {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+.animate-shimmer-glow { animation: shimmer-glow 3.5s ease-in-out infinite; }
+
+/* Scroll invisible – barres masquées, défilement conservé */
+.overflow-y-auto,
+.overflow-x-auto,
+.overflow-y-scroll,
+.overflow-x-scroll,
+.overflow-auto {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.overflow-y-auto::-webkit-scrollbar,
+.overflow-x-auto::-webkit-scrollbar,
+.overflow-y-scroll::-webkit-scrollbar,
+.overflow-x-scroll::-webkit-scrollbar,
+.overflow-auto::-webkit-scrollbar {
+  display: none;
+}
+
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
+  .animate-shimmer {
+    animation: shimmer 3s infinite;
+  }
+}
+
+@layer components {
+  .card {
+    border-radius: var(--radius-card);
+    background-color: var(--bg-card);
+    color: var(--text-foreground);
+    border: 1px solid var(--border-color);
+    padding: var(--space-card);
+    box-shadow: var(--shadow-card);
+  }
+
+  .btn-primary {
+    @apply bg-crg-primary hover:bg-crg-dark text-white font-medium px-4 py-2 rounded-xl transition-colors;
+  }
+
+  .btn-secondary {
+    @apply bg-card text-foreground border border-border hover:bg-muted font-medium px-4 py-2 rounded-xl transition-colors;
+  }
+
+  .btn-accent {
+    @apply bg-crg-primary hover:bg-crg-dark text-white font-medium px-4 py-2 rounded-xl transition-colors;
+  }
+}
+
+/* Classes utilitaires alignées sur les variables de thème */
+.bg-background { background-color: var(--bg-background) !important; }
+.bg-card { background-color: var(--bg-card) !important; }
+.bg-muted { background-color: var(--bg-muted) !important; }
+.bg-surface-1 { background-color: var(--bg-surface-1) !important; }
+.bg-surface-2 { background-color: var(--bg-surface-2) !important; }
+.bg-input { background-color: var(--bg-input) !important; }
+.border-border { border-color: var(--border-color) !important; }
+.text-foreground { color: var(--text-foreground) !important; }
+.text-muted-foreground { color: var(--text-muted) !important; }
+.text-success { color: var(--accent-success) !important; }
+.text-error { color: var(--accent-error) !important; }
+.bg-success { background-color: var(--accent-success) !important; }
+.border-success { border-color: var(--accent-success) !important; }
+.border-error { border-color: var(--accent-error) !important; }
+.bg-success-soft { background-color: rgb(var(--accent-success-rgb) / 0.14) !important; }
+.bg-error-soft { background-color: rgb(var(--accent-error-rgb) / 0.14) !important; }
+.bg-primary { background-color: var(--accent-primary) !important; }
+.text-primary { color: var(--accent-primary) !important; }
+.border-primary { border-color: var(--accent-primary) !important; }
+.bg-primary\/5 { background-color: rgb(var(--accent-primary-rgb) / 0.05) !important; }
+.bg-primary\/10 { background-color: rgb(var(--accent-primary-rgb) / 0.1) !important; }
+.bg-primary\/12 { background-color: rgb(var(--accent-primary-rgb) / 0.12) !important; }
+.bg-primary\/15 { background-color: rgb(var(--accent-primary-rgb) / 0.15) !important; }
+.bg-primary\/20 { background-color: rgb(var(--accent-primary-rgb) / 0.2) !important; }
+.border-primary\/40 { border-color: rgb(var(--accent-primary-rgb) / 0.4) !important; }
+
+/* Séparation visuelle des blocs/cartes via fonds + ombres (sans contours) */
+.card,
+.bg-card,
+[class*=" bg-card"],
+[class^="bg-card"] {
+  box-shadow: var(--shadow-card) !important;
+}
+
+.bg-muted,
+[class*=" bg-muted"],
+[class^="bg-muted"] {
+  box-shadow: var(--shadow-block) !important;
+}
+
+/* Réduction globale des ombres Tailwind historiques */
+[class*="shadow"],
+[class*=" shadow"],
+[class^="shadow"] {
+  box-shadow: var(--shadow-block) !important;
+}
+
+/* Harmonisation globale des classes Tailwind historiques (light + dark) */
+.bg-gray-50,
+.bg-gray-100,
+.bg-gray-200,
+.bg-white {
+  background-color: var(--bg-card) !important;
+}
+
+.text-gray-900,
+.text-gray-800,
+.text-gray-700,
+.text-black {
+  color: var(--text-foreground) !important;
+}
+
+.text-gray-600,
+.text-gray-500,
+.text-gray-400,
+.text-gray-300 {
+  color: var(--text-muted) !important;
+}
+
+.border-gray-100,
+.border-gray-200,
+.border-gray-300,
+.border-gray-700,
+.border-gray-800 {
+  border-color: var(--border-color) !important;
+}
+
+.hover\:bg-gray-50:hover,
+.hover\:bg-gray-100:hover,
+.hover\:bg-gray-200:hover,
+.dark\:hover\:bg-gray-700:hover,
+.dark\:hover\:bg-gray-800:hover,
+.dark\:hover\:bg-gray-900:hover {
+  background-color: var(--bg-muted) !important;
+}
+
+.dark\:bg-gray-700,
+.dark\:bg-gray-800,
+.dark\:bg-gray-900 {
+  background-color: var(--bg-card) !important;
+}
+
+.dark\:text-white,
+.dark\:text-gray-200 {
+  color: var(--text-foreground) !important;
+}
+
+.dark\:text-gray-300,
+.dark\:text-gray-400,
+.dark\:text-gray-500,
+.dark\:text-gray-600 {
+  color: var(--text-muted) !important;
+}
+
+.dark\:border-gray-600,
+.dark\:border-gray-700,
+.dark\:border-gray-800 {
+  border-color: var(--border-color) !important;
+}
+
+.divide-gray-200,
+.dark\:divide-gray-700 {
+  border-color: var(--border-color) !important;
+}
+
+[class*=" bg-gray-"],
+[class^="bg-gray-"],
+[class*=" dark:bg-gray-"] {
+  background-color: var(--bg-card);
+}
+
+[class*=" text-gray-"],
+[class^="text-gray-"],
+[class*=" dark:text-gray-"] {
+  color: var(--text-muted);
+}
+
+[class*=" text-gray-9"],
+[class*=" text-gray-8"],
+[class*=" text-gray-7"],
+[class*=" dark:text-white"] {
+  color: var(--text-foreground);
+}
+
+[class*=" border-gray-"],
+[class^="border-gray-"],
+[class*=" dark:border-gray-"] {
+  border-color: var(--border-color);
+}
+
+/* Contours légers pour structure */
+*,
+*::before,
+*::after {
+  outline: none !important;
+}
+
+input:focus,
+textarea:focus,
+select:focus,
+button:focus,
+a:focus {
+  outline: none !important;
+}
+
+/* Format facture – identique à l'impression */
+.invoice-document {
+  font-family: 'Times New Roman', serif;
+  font-size: 12pt;
+  line-height: 1.4;
+  color: #000;
+  background: #fff;
+}
+.invoice-document .header {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 25px;
+  margin-top: 20px;
+  width: 100%;
+  gap: 15px;
+}
+.invoice-document .logo {
+  width: 140px;
+  height: 140px;
+  flex-shrink: 0;
+}
+.invoice-document .company-info {
+  flex: 1;
+  text-align: left;
+  padding-left: 10px;
+}
+.invoice-document .company-name {
+  font-size: 22pt;
+  font-weight: bold;
+  color: #006020;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid #006020;
+  padding-bottom: 5px;
+  display: inline-block;
+}
+.invoice-document .company-details {
+  font-size: 9pt;
+  line-height: 1.5;
+  color: #000;
+}
+.invoice-document hr {
+  border: none;
+  border-top: 1px solid #000;
+  margin: 20px 0;
+  width: 100%;
+}
+.invoice-document .invoice-title {
+  text-align: center;
+  font-size: 16pt;
+  font-weight: bold;
+  margin: 20px 0;
+  border-bottom: 1px solid #000;
+  padding-bottom: 8px;
+}
+.invoice-document .invoice-date {
+  text-align: right;
+  margin-bottom: 20px;
+  font-weight: bold;
+  font-size: 12pt;
+}
+.invoice-document .nature-depense {
+  margin-bottom: 20px;
+  padding-bottom: 8px;
+  font-size: 12pt;
+}
+.invoice-document table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+.invoice-document table th,
+.invoice-document table td {
+  border: 1px solid #000;
+  padding: 6px 8px;
+  text-align: left;
+  font-size: 11pt;
+  line-height: 1.2;
+}
+.invoice-document table th {
+  background-color: #f0f0f0;
+  font-weight: bold;
+  text-align: center;
+}
+.invoice-document table td:last-child {
+  text-align: center;
+}
+.invoice-document .total-row td,
+.invoice-document .fee-row td {
+  border-top: 1px solid #000;
+  font-weight: bold;
+}
+.invoice-document .grand-total-row td {
+  border-top: 1px solid #000;
+  font-weight: bold;
+  background-color: #f0f0f0;
+}
+.invoice-document .accounting-table {
+  margin-top: 25px;
+  border: 1px solid #000;
+  border-collapse: collapse;
+}
+.invoice-document .accounting-table th,
+.invoice-document .accounting-table td {
+  border: 1px solid #000;
+  padding: 6px 8px;
+  font-size: 11pt;
+  text-align: center;
+}
+.invoice-document .accounting-table th {
+  background-color: #e0e0e0;
+}
+.invoice-document .wallet-section {
+  margin: 20px 0;
+  border: 1px solid #000;
+  display: flex;
+  width: 100%;
+}
+.invoice-document .wallet-label {
+  width: 70%;
+  padding: 12px 15px;
+  font-weight: bold;
+  font-size: 12pt;
+  border-right: 1px solid #000;
+  display: flex;
+  align-items: center;
+}
+.invoice-document .wallet-input {
+  width: 30%;
+  padding: 12px 15px;
+  min-height: 50px;
+  text-align: center;
+  font-weight: bold;
+  font-size: 14pt;
+}
+.invoice-document .amount-words {
+  margin: 20px 0;
+  padding-bottom: 8px;
+  font-size: 12pt;
+  text-transform: capitalize;
+}
+.invoice-document .signatures {
+  margin-top: 12px;
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+.invoice-document .signature-box {
+  width: 45%;
+  border-top: 1px solid #000;
+  padding-top: 8px;
+  margin-top: 10px;
+  min-height: 100px;
+  font-size: 12pt;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.invoice-document .signature-box img {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+.invoice-document .signature-text {
+  font-family: 'Brush Script MT', 'Lucida Handwriting', cursive;
+  font-size: 24pt;
+  color: #0066cc;
+  font-style: italic;
+  margin-top: 8px;
+}
+
+/* Version compacte pour affichage sans scroll (vue directrice) */
+.invoice-document-compact {
+  font-size: 8pt !important;
+  line-height: 1.2 !important;
+  width: 100% !important;
+  min-width: 100% !important;
+  box-sizing: border-box;
+}
+.invoice-document-compact .header {
+  margin-bottom: 8px;
+  margin-top: 4px;
+  gap: 8px;
+}
+.invoice-document-compact .logo {
+  width: 72px !important;
+  height: 72px !important;
+}
+.invoice-document-compact .company-name {
+  font-size: 11pt !important;
+  margin-bottom: 4px;
+  padding-bottom: 2px;
+}
+.invoice-document-compact .company-details {
+  font-size: 7pt !important;
+}
+.invoice-document-compact hr {
+  margin: 8px 0;
+}
+.invoice-document-compact .invoice-title {
+  font-size: 10pt !important;
+  margin: 8px 0;
+  padding-bottom: 4px;
+}
+.invoice-document-compact .invoice-date {
+  margin-bottom: 8px;
+  font-size: 8pt !important;
+}
+.invoice-document-compact .nature-depense {
+  margin-bottom: 8px;
+  padding-bottom: 4px;
+  font-size: 8pt !important;
+}
+.invoice-document-compact table {
+  margin-bottom: 8px;
+}
+.invoice-document-compact table th,
+.invoice-document-compact table td {
+  padding: 3px 4px;
+  font-size: 7pt !important;
+  line-height: 1.1;
+}
+.invoice-document-compact .accounting-table {
+  margin-top: 10px;
+}
+.invoice-document-compact .accounting-table th,
+.invoice-document-compact .accounting-table td {
+  padding: 3px 4px;
+  font-size: 7pt !important;
+}
+.invoice-document-compact .wallet-section {
+  margin: 8px 0;
+}
+.invoice-document-compact .wallet-label {
+  padding: 6px 8px;
+  font-size: 8pt !important;
+}
+.invoice-document-compact .wallet-input {
+  padding: 6px 8px;
+  min-height: 28px;
+  font-size: 9pt !important;
+}
+.invoice-document-compact .amount-words {
+  margin: 8px 0;
+  padding-bottom: 4px;
+  font-size: 8pt !important;
+}
+.invoice-document-compact .signatures {
+  margin-top: 6px;
+}
+.invoice-document-compact .signature-box {
+  padding-top: 4px;
+  margin-top: 6px;
+  min-height: 50px;
+  font-size: 8pt !important;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.invoice-document-compact .signature-box img {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+.invoice-document-compact .signature-text {
+  font-size: 12pt !important;
+  margin-top: 2px;
+}
+.invoice-document-compact .accounting-table th,
+.invoice-document-compact .accounting-table td {
+  font-size: 7pt !important;
+}
+
+/* Scroll automatique et invisible pour la feuille facture */
+.invoice-sheet-scroll {
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.invoice-sheet-scroll::-webkit-scrollbar {
+  display: none;
+}
