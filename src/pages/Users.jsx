@@ -290,6 +290,7 @@ export default function Users() {
         console.log('✅ Utilisateur créé avec succès:', newUser)
 
         setShowModal(false)
+        setSuccess(null)
         reset()
         await loadUsers()
         setCredentialsData({
@@ -418,7 +419,7 @@ export default function Users() {
           </button>
         </div>
       )}
-      {success && (
+      {success && !credentialsData && (
         <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/50">
           <CheckCircle2 size={18} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
           <p className="text-sm text-emerald-800 dark:text-emerald-200 flex-1">{success}</p>
