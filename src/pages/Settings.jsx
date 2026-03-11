@@ -393,7 +393,7 @@ export default function Settings() {
             <p className="text-xs text-muted-foreground mb-3">
               Choisissez le thème d'affichage de l'interface.
             </p>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
               <button
                 onClick={() => handleThemeChange('light')}
                 className={`p-2.5 rounded-lg border-2 transition-all duration-200 flex flex-col items-center gap-1.5 ${
@@ -418,6 +418,19 @@ export default function Settings() {
                 <Moon size={18} className={currentTheme === 'dark' ? 'text-blue-500' : 'text-muted-foreground'} />
                 <span className={`text-xs font-medium ${currentTheme === 'dark' ? 'text-crg-primary' : 'text-muted-foreground'}`}>
                   Sombre
+                </span>
+              </button>
+              <button
+                onClick={() => handleThemeChange('midnight')}
+                className={`p-2.5 rounded-lg border-2 transition-all duration-200 flex flex-col items-center gap-1.5 ${
+                  currentTheme === 'midnight'
+                    ? 'border-crg-primary bg-black/40 dark:bg-black/60 shadow-md scale-105'
+                    : 'border-border hover:border-border'
+                }`}
+              >
+                <Moon size={18} className={currentTheme === 'midnight' ? 'text-white' : 'text-muted-foreground'} />
+                <span className={`text-xs font-medium ${currentTheme === 'midnight' ? 'text-white' : 'text-muted-foreground'}`}>
+                  Nuit totale
                 </span>
               </button>
               <button

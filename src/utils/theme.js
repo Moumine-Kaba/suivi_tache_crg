@@ -1,5 +1,5 @@
 const THEME_KEY = 'crg-theme'
-const ALLOWED_THEMES = ['light', 'dark', 'system']
+const ALLOWED_THEMES = ['light', 'dark', 'midnight', 'system']
 
 let systemThemeListenerAttached = false
 
@@ -14,7 +14,8 @@ const resolveTheme = (theme) => {
 
 const applyResolvedTheme = (resolvedTheme) => {
   const root = document.documentElement
-  root.classList.toggle('dark', resolvedTheme === 'dark')
+  // Le thème "midnight" utilise aussi la palette sombre (classe Tailwind dark)
+  root.classList.toggle('dark', resolvedTheme === 'dark' || resolvedTheme === 'midnight')
   root.setAttribute('data-theme', resolvedTheme)
 }
 
