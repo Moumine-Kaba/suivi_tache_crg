@@ -7,23 +7,38 @@ import { cn } from '../../utils/cn'
  * Composant Modal réutilisable
  * Utilise createPortal pour éviter les erreurs "insertBefore" sur Node
  */
-export default function Modal({ isOpen, onClose, title, children, size = 'md', className, overlayClassName }) {
+export default function Modal({
+  isOpen,
+  onClose,
+  title,
+  children,
+  size = 'md',
+  className,
+  overlayClassName,
+  disableBodyScroll = false,
+}) {
   const contentRef = useRef(null)
 
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = 'hidden'
+      if (!disableBodyScroll) {
+        document.body.style.overflow = 'hidden'
+      }
       // Scroll en haut à l'ouverture pour afficher tous les champs
       requestAnimationFrame(() => {
         if (contentRef.current) contentRef.current.scrollTop = 0
       })
     } else {
-      document.body.style.overflow = 'unset'
+      if (!disableBodyScroll) {
+        document.body.style.overflow = 'unset'
+      }
     }
     return () => {
-      document.body.style.overflow = 'unset'
+      if (!disableBodyScroll) {
+        document.body.style.overflow = 'unset'
+      }
     }
-  }, [isOpen])
+  }, [isOpen, disableBodyScroll])
 
   if (!isOpen) return null
 

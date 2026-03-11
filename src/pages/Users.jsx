@@ -577,7 +577,9 @@ export default function Users() {
           reset()
         }}
         title={editingUser ? 'Modifier l\'utilisateur' : 'Nouvel utilisateur'}
-        size="lg"
+        size="xl"
+        disableBodyScroll
+        className="max-h-none overflow-visible"
       >
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {/* En-tête avec icône */}
