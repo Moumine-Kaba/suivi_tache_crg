@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
-import { LogIn, Mail, Lock, AlertCircle, Eye, EyeOff, KeyRound, Sparkles, Shield } from 'lucide-react'
+import { LogIn, Mail, Lock, AlertCircle, Eye, EyeOff, KeyRound, Sparkles, Shield, Check } from 'lucide-react'
 import useAuthStore from '../store/authStore'
 import { authService } from '../services/api'
 import Modal from '../components/ui/Modal'
 import Button from '../components/ui/Button'
-import { passwordValidator, PASSWORD_RULES } from '../utils/passwordValidation'
+import { passwordValidator, getPasswordRulesStatus } from '../utils/passwordValidation'
 import logoCRG from '../assets/logo_crg.png'
 
 /**
@@ -27,6 +27,7 @@ export default function Login() {
   const [changePwdSuccess, setChangePwdSuccess] = useState('')
   const [isChangingPassword, setIsChangingPassword] = useState(false)
   const [showChangePwdPassword, setShowChangePwdPassword] = useState(false)
+  const [showChangePwdConfirm, setShowChangePwdConfirm] = useState(false)
 
   // Vérifier si une déconnexion explicite a été effectuée
   // Si oui, forcer la déconnexion et ne pas rediriger
@@ -324,18 +325,24 @@ export default function Login() {
           {/* FORMULAIRE CHANGEMENT MOT DE PASSE (remplace le login) */}
           {showChangePasswordForm ? (
             <form onSubmit={handleChangePwdSubmit(onSubmitChangePassword)} className="max-w-md w-full mx-auto relative" noValidate>
-              <div className="mb-6 p-4 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50">
-                <h3 className="font-bold text-amber-900 dark:text-amber-100 flex items-center gap-2">
-                  <Shield size={20} />
-                  Nouveau mot de passe requis
-                </h3>
-                <p className="text-sm text-amber-800 dark:text-amber-200 mt-1">Pour des raisons de sécurité, définissez un mot de passe personnel.</p>
+              {/* Encart information raffiné */}
+              <div className="mb-8 p-5 rounded-2xl border border-[#006020]/20 dark:border-emerald-500/20 bg-gradient-to-br from-[#006020]/5 to-emerald-500/5 dark:from-emerald-500/5 dark:to-emerald-600/5 animate-login-field">
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-[#006020]/10 dark:bg-emerald-500/15 flex items-center justify-center">
+                    <Shield size={24} className="text-[#006020] dark:text-emerald-400" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-gray-900 dark:text-white">Première connexion — Mot de passe requis</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Pour sécuriser votre compte, choisissez un mot de passe personnel et unique.</p>
+                  </div>
+                </div>
               </div>
 
-              <div className="mb-4">
+              {/* Champ Nouveau mot de passe */}
+              <div className="mb-4 animate-login-field" style={{ animationDelay: '0.05s' }}>
                 <label htmlFor="newPassword" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Nouveau mot de passe</label>
                 <div className="relative group">
-                  <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#006020] dark:group-focus-within:text-emerald-400 transition-colors pointer-events-none" />
+                  <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#006020] dark:group-focus-within:text-emerald-400 transition-all duration-200 z-10 pointer-events-none" />
                   <input
                     id="newPassword"
                     type={showChangePwdPassword ? 'text' : 'password'}
@@ -343,70 +350,106 @@ export default function Login() {
                       required: 'Le mot de passe est requis',
                       validate: passwordValidator,
                     })}
-                    className={`w-full pl-11 pr-12 py-3 rounded-xl border-2 transition-all ${
+                    className={`login-input-v3 w-full pl-11 pr-12 py-3 rounded-xl border-2 transition-all duration-300 ${
                       changePwdErrors.password
                         ? 'border-red-400 dark:border-red-500 bg-red-50/50 dark:bg-red-950/20'
-                        : 'border-gray-200 dark:border-gray-600 bg-gray-50/80 dark:bg-gray-800/50 focus:border-[#006020] dark:focus:border-emerald-500'
+                        : 'border-gray-200 dark:border-gray-600 bg-gray-50/80 dark:bg-gray-800/50 hover:border-gray-300 dark:hover:border-gray-500 hover:shadow-sm focus:border-[#006020] dark:focus:border-emerald-500 focus:bg-white dark:focus:bg-gray-800 focus:ring-4 focus:ring-[#006020]/10 dark:focus:ring-emerald-500/10 focus:shadow-md focus:shadow-[#006020]/5 dark:focus:shadow-emerald-500/5'
                     }`}
-                    placeholder="••••••••"
+                    placeholder="Entrez votre nouveau mot de passe"
                     autoFocus
+                    aria-invalid={!!changePwdErrors.password}
                   />
+                  <div className="absolute left-0 top-2 bottom-2 w-1 rounded-r-md bg-[#006020] dark:bg-emerald-500 scale-y-0 group-focus-within:scale-y-100 origin-bottom transition-transform duration-300 z-10" />
                   <button
                     type="button"
                     onClick={() => setShowChangePwdPassword(!showChangePwdPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-lg text-gray-400 hover:text-[#006020] dark:hover:text-emerald-400"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-lg text-gray-400 hover:text-[#006020] dark:hover:text-emerald-400 hover:bg-[#006020]/5 dark:hover:bg-emerald-500/10 transition-all"
                     aria-label={showChangePwdPassword ? 'Masquer' : 'Afficher'}
                   >
                     {showChangePwdPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
                 {changePwdErrors.password && (
-                  <p className="mt-1.5 text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
+                  <p className="mt-1.5 text-xs text-red-600 dark:text-red-400 flex items-center gap-1.5" role="alert">
                     <AlertCircle size={14} /> {changePwdErrors.password.message}
                   </p>
                 )}
-                <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400">{PASSWORD_RULES.join(' · ')}</p>
+                {/* Indicateur de règles en temps réel */}
+                {changePwdPassword && (
+                  <div className="mt-3 p-3 rounded-xl bg-gray-50/80 dark:bg-gray-800/50 border border-gray-200/80 dark:border-gray-700/50">
+                    <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">Le mot de passe doit contenir :</p>
+                    <ul className="space-y-1.5">
+                      {getPasswordRulesStatus(changePwdPassword).map((rule, i) => (
+                        <li key={i} className={`flex items-center gap-2 text-xs ${rule.met ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-500 dark:text-gray-400'}`}>
+                          <span className={`flex-shrink-0 w-4 h-4 rounded-full flex items-center justify-center ${rule.met ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400' : 'bg-gray-200 dark:bg-gray-600'}`}>
+                            {rule.met ? <Check size={10} strokeWidth={3} /> : null}
+                          </span>
+                          <span className={rule.met ? 'font-medium' : ''}>{rule.label}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
 
-              <div className="mb-4">
+              {/* Champ Confirmer mot de passe */}
+              <div className="mb-6 animate-login-field" style={{ animationDelay: '0.1s' }}>
                 <label htmlFor="confirmNewPassword" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Confirmer le mot de passe</label>
-                <input
-                  id="confirmNewPassword"
-                  type={showChangePwdPassword ? 'text' : 'password'}
-                  {...registerChangePwd('confirmPassword', {
-                    required: 'Veuillez confirmer le mot de passe',
-                    validate: (v) => v === changePwdPassword || 'Les mots de passe ne correspondent pas',
-                  })}
-                  className={`w-full px-4 py-3 rounded-xl border-2 transition-all ${
-                    changePwdErrors.confirmPassword
-                      ? 'border-red-400 dark:border-red-500 bg-red-50/50 dark:bg-red-950/20'
-                      : 'border-gray-200 dark:border-gray-600 bg-gray-50/80 dark:bg-gray-800/50 focus:border-[#006020] dark:focus:border-emerald-500'
-                  }`}
-                  placeholder="••••••••"
-                />
+                <div className="relative group">
+                  <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#006020] dark:group-focus-within:text-emerald-400 transition-all duration-200 z-10 pointer-events-none" />
+                  <input
+                    id="confirmNewPassword"
+                    type={showChangePwdConfirm ? 'text' : 'password'}
+                    {...registerChangePwd('confirmPassword', {
+                      required: 'Veuillez confirmer le mot de passe',
+                      validate: (v) => v === changePwdPassword || 'Les mots de passe ne correspondent pas',
+                    })}
+                    className={`login-input-v3 w-full pl-11 pr-12 py-3 rounded-xl border-2 transition-all duration-300 ${
+                      changePwdErrors.confirmPassword
+                        ? 'border-red-400 dark:border-red-500 bg-red-50/50 dark:bg-red-950/20'
+                        : 'border-gray-200 dark:border-gray-600 bg-gray-50/80 dark:bg-gray-800/50 hover:border-gray-300 dark:hover:border-gray-500 hover:shadow-sm focus:border-[#006020] dark:focus:border-emerald-500 focus:bg-white dark:focus:bg-gray-800 focus:ring-4 focus:ring-[#006020]/10 dark:focus:ring-emerald-500/10 focus:shadow-md focus:shadow-[#006020]/5 dark:focus:shadow-emerald-500/5'
+                    }`}
+                    placeholder="Répétez le mot de passe"
+                    aria-invalid={!!changePwdErrors.confirmPassword}
+                  />
+                  <div className="absolute left-0 top-2 bottom-2 w-1 rounded-r-md bg-[#006020] dark:bg-emerald-500 scale-y-0 group-focus-within:scale-y-100 origin-bottom transition-transform duration-300 z-10" />
+                  <button
+                    type="button"
+                    onClick={() => setShowChangePwdConfirm(!showChangePwdConfirm)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-lg text-gray-400 hover:text-[#006020] dark:hover:text-emerald-400 hover:bg-[#006020]/5 dark:hover:bg-emerald-500/10 transition-all"
+                    aria-label={showChangePwdConfirm ? 'Masquer' : 'Afficher'}
+                  >
+                    {showChangePwdConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
                 {changePwdErrors.confirmPassword && (
-                  <p className="mt-1.5 text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
+                  <p className="mt-1.5 text-xs text-red-600 dark:text-red-400 flex items-center gap-1.5" role="alert">
                     <AlertCircle size={14} /> {changePwdErrors.confirmPassword.message}
                   </p>
                 )}
               </div>
 
+              {/* Bouton submit */}
               <button
                 type="submit"
                 disabled={isChangingPassword}
-                className="w-full py-3.5 px-6 rounded-xl font-semibold text-white bg-[#006020] hover:bg-[#004d18] dark:bg-emerald-600 dark:hover:bg-emerald-700 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                className="login-btn-v3 group/btn relative w-full py-3.5 px-6 rounded-xl text-base font-semibold text-white flex items-center justify-center gap-3 overflow-hidden transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none focus:outline-none focus:ring-4 focus:ring-[#006020]/30 focus:ring-offset-2 animate-login-field"
+                style={{ animationDelay: '0.15s' }}
               >
-                {isChangingPassword ? (
-                  <>
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    Modification...
-                  </>
-                ) : (
-                  <>
-                    <Shield size={18} />
-                    Définir mon mot de passe
-                  </>
-                )}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-700 pointer-events-none" />
+                <span className="relative z-10 flex items-center gap-3">
+                  {isChangingPassword ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      Modification en cours...
+                    </>
+                  ) : (
+                    <>
+                      <Shield size={20} className="opacity-90" />
+                      Définir mon mot de passe
+                    </>
+                  )}
+                </span>
               </button>
             </form>
           ) : (

@@ -154,6 +154,9 @@ VITE_API_URL=https://missions.crg.gn/api
 
 Par défaut, l'application utilise des données mockées.
 
+### Suivi des déploiements via Slack
+Les notifications de déploiement peuvent être envoyées dans un canal Slack. Voir **[docs/SLACK_DEPLOYMENT.md](docs/SLACK_DEPLOYMENT.md)** pour la configuration.
+
 ## 📝 Notes
 
 - Les données sont actuellement **mockées** dans `src/services/api.js`
