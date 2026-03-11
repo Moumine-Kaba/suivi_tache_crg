@@ -16,6 +16,7 @@ export default function Modal({
   className,
   overlayClassName,
   disableBodyScroll = false,
+  align = 'center', // 'center' | 'top'
 }) {
   const contentRef = useRef(null)
 
@@ -52,7 +53,11 @@ export default function Modal({
 
   const modalContent = (
     <div
-      className={cn('fixed inset-0 z-50 flex items-center justify-center bg-black/60', overlayClassName)}
+      className={cn(
+        'fixed inset-0 z-50 flex justify-center bg-black/60',
+        align === 'top' ? 'items-start pt-6 sm:pt-10' : 'items-center',
+        overlayClassName
+      )}
       onClick={onClose}
     >
       <div
