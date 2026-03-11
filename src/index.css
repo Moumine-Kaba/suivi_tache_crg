@@ -51,12 +51,12 @@
   /* Thème ultra sombre "midnight" : noir pur + gris neutre */
   html[data-theme='midnight'] {
     --bg-background: #000000; /* noir pur */
-    --bg-card: #050505;       /* très léger relief */
-    --bg-input: #050505;
-    --bg-muted: #101010;      /* gris neutre très sombre */
-    --bg-surface-1: #050505;
-    --bg-surface-2: #050505;
-    --border-color: #262626;  /* gris neutre */
+    --bg-card: #050712;       /* noir très foncé avec légère teinte */
+    --bg-input: #050712;
+    --bg-muted: #111827;      /* gris/noir foncé type slate-900 */
+    --bg-surface-1: #020617;
+    --bg-surface-2: #020617;
+    --border-color: #1f2937;  /* gris neutre foncé */
     --text-foreground: #f5f5f5; /* gris très clair */
     --text-muted: #a3a3a3;      /* gris moyen neutre */
     --text-on-primary: #ffffff;
