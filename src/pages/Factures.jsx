@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
-import { Save, Printer, Plus, Trash2, FileText, FileCheck, Loader2, Eye, Stamp, Upload, CheckCircle2, Archive, LayoutList, Receipt, Menu, X, ArrowLeft, RefreshCw, ChevronRight, ChevronLeft, Sparkles, Search, Download, ArrowUpDown, Banknote, CircleDollarSign, Shield } from 'lucide-react'
+import { Save, Printer, Plus, Trash2, FileText, FileCheck, Loader2, Eye, EyeOff, Stamp, Upload, CheckCircle2, Archive, LayoutList, Receipt, Menu, X, ArrowLeft, RefreshCw, ChevronRight, ChevronLeft, Sparkles, Search, Download, ArrowUpDown, Banknote, CircleDollarSign, Shield, Lock } from 'lucide-react'
 import useAuthStore from '../store/authStore'
 import useNotificationsStore from '../store/notificationsStore'
 import { invoicesService, usersService } from '../services/api'
@@ -435,10 +435,10 @@ export default function Factures() {
   const [viewingArchiveInvoiceId, setViewingArchiveInvoiceId] = useState(null)
   const [archiveSearchFilter, setArchiveSearchFilter] = useState('')
   const [archiveSortOrder, setArchiveSortOrder] = useState('date_desc')
-  const [showPinModal, setShowPinModal] = useState(false)
-  const [signaturePinValue, setSignaturePinValue] = useState('')
-  const [pinError, setPinError] = useState('')
-  const [hasSignaturePin, setHasSignaturePin] = useState(false)
+  const [showPasswordModal, setShowPasswordModal] = useState(false)
+  const [signaturePasswordValue, setSignaturePasswordValue] = useState('')
+  const [passwordError, setPasswordError] = useState('')
+  const [showSignaturePassword, setShowSignaturePassword] = useState(false)
   const printRef = useRef(null)
   const stampInputRef = useRef(null)
   
@@ -566,11 +566,6 @@ export default function Factures() {
     loadNotifications({ force: true }).catch(() => {})
   }, [loadNotifications])
 
-  useEffect(() => {
-    if (isDirector) {
-      usersService.hasSignaturePin().then(setHasSignaturePin).catch(() => setHasSignaturePin(false))
-    }
-  }, [isDirector])
 
   const hydrateFormFromInvoice = (invoice) => {
     if (!invoice) return
@@ -1069,7 +1064,7 @@ export default function Factures() {
     openApplicantSignModal(data)
   }
 
-  const doSignAndTransmit = async (pin = null) => {
+  const doSignAndTransmit = async (password = null) => {
     if (!selectedInvoiceId) return
     setActionLoadingId(String(selectedInvoiceId))
     try {
@@ -1077,18 +1072,18 @@ export default function Factures() {
         signatureName,
         stampLabel,
         stampImage: stampImage || null,
-        signaturePin: pin || undefined,
+        signaturePassword: password || undefined,
       })
       await loadInvoices()
       setSelectedInvoiceId(null)
-      setShowPinModal(false)
-      setSignaturePinValue('')
-      setPinError('')
+      setShowPasswordModal(false)
+      setSignaturePasswordValue('')
+      setPasswordError('')
       alert('Facture signée et transmise au Service Gestion')
     } catch (error) {
       console.error('Erreur signature directrice:', error)
-      if (showPinModal) {
-        setPinError(error.message || 'PIN incorrect ou erreur.')
+      if (showPasswordModal) {
+        setPasswordError(error.message || 'Mot de passe incorrect ou erreur.')
       } else {
         alert(`Erreur lors de la signature: ${error.message || 'inconnue'}`)
       }
@@ -1099,23 +1094,18 @@ export default function Factures() {
 
   const handleDirectorSignAndTransmit = async () => {
     if (!selectedInvoiceId) return
-    if (!hasSignaturePin) {
-      alert('Vous devez définir votre PIN de signature dans votre profil avant de pouvoir signer des factures.')
-      navigate('/profile')
-      return
-    }
-    setPinError('')
-    setSignaturePinValue('')
-    setShowPinModal(true)
+    setPasswordError('')
+    setSignaturePasswordValue('')
+    setShowPasswordModal(true)
   }
 
-  const handlePinSubmit = async (e) => {
+  const handlePasswordSubmit = async (e) => {
     e?.preventDefault()
-    if (!signaturePinValue || signaturePinValue.length < 4) {
-      setPinError('Entrez votre PIN (4 à 6 chiffres).')
+    if (!signaturePasswordValue || signaturePasswordValue.length < 6) {
+      setPasswordError('Entrez votre mot de passe (au moins 6 caractères).')
       return
     }
-    await doSignAndTransmit(signaturePinValue)
+    await doSignAndTransmit(signaturePasswordValue)
   }
 
   const processStampImage = (file, callback) => {
@@ -1681,29 +1671,7 @@ export default function Factures() {
                           <Stamp size={14} />
                           Signature et cachet
                         </h4>
-                        {!hasSignaturePin && (
-                          <div className="mb-3 p-3 rounded-xl bg-amber-50 dark:bg-amber-900/30 border-2 border-amber-200 dark:border-amber-700 flex flex-col gap-2">
-                            <div className="flex items-start gap-2">
-                              <Shield size={20} className="text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
-                              <div>
-                                <p className="text-sm font-semibold text-amber-800 dark:text-amber-200">
-                                  PIN de signature requis
-                                </p>
-                                <p className="text-xs text-amber-700 dark:text-amber-300 mt-0.5">
-                                  Vous devez définir votre code PIN (4 à 6 chiffres) dans votre profil avant de pouvoir configurer et utiliser votre signature.
-                                </p>
-                              </div>
-                            </div>
-                            <Link
-                              to="/profile"
-                              className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-sm font-medium bg-crg-primary hover:bg-crg-dark text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-crg-primary transition-colors"
-                            >
-                              <Shield size={16} />
-                              Définir mon PIN dans Profil
-                            </Link>
-                          </div>
-                        )}
-                        <div className={`grid grid-cols-1 md:grid-cols-2 gap-2 mb-2 flex-shrink-0 ${!hasSignaturePin ? 'opacity-50 pointer-events-none' : ''}`}>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2 flex-shrink-0">
                           <div>
                             <label className="block text-[10px] font-medium text-muted-foreground mb-1">Nom pour signature</label>
                             <input
@@ -1727,7 +1695,7 @@ export default function Factures() {
                             />
                           </div>
                         </div>
-                        <div className={`mb-2 flex-shrink-0 ${!hasSignaturePin ? 'opacity-50 pointer-events-none' : ''}`}>
+                        <div className="mb-2 flex-shrink-0">
                           <label className="block text-[10px] font-medium text-muted-foreground mb-1">Image du cachet (optionnel)</label>
                           <div className="flex flex-wrap items-center gap-3">
                             <input
@@ -1755,7 +1723,7 @@ export default function Factures() {
                             )}
                           </div>
                         </div>
-                        <div className={`invoice-preview-bg rounded-lg border border-border bg-white p-3 mb-2 flex-1 min-h-[120px] overflow-hidden flex flex-col ${!hasSignaturePin ? 'opacity-50 pointer-events-none' : ''}`}>
+                        <div className="invoice-preview-bg rounded-lg border border-border bg-white p-3 mb-2 flex-1 min-h-[120px] overflow-hidden flex flex-col">
                           <div className="flex items-center justify-between mb-2 flex-shrink-0">
                             <p className="text-[10px] font-medium text-muted-foreground">Signature du Directeur</p>
                             <div className="flex items-center gap-2">
@@ -1806,7 +1774,7 @@ export default function Factures() {
                             type="button"
                             variant="primary"
                             onClick={handleDirectorSignAndTransmit}
-                            disabled={!hasSignaturePin || actionLoadingId === String(selectedInvoiceId)}
+                            disabled={actionLoadingId === String(selectedInvoiceId)}
                             className="flex-1 py-1.5 text-sm font-semibold"
                           >
                             {actionLoadingId === String(selectedInvoiceId) ? (
@@ -2877,60 +2845,69 @@ export default function Factures() {
           </Modal>
         )}
 
-        {/* Modal PIN de signature (directeur) – s'affiche au clic sur "Signer et transmettre" */}
-        {showPinModal && (
+        {/* Modal mot de passe pour confirmer la signature (directeur) */}
+        {showPasswordModal && (
           <Modal
-            isOpen={showPinModal}
-            onClose={() => { setShowPinModal(false); setSignaturePinValue(''); setPinError('') }}
+            isOpen={showPasswordModal}
+            onClose={() => { setShowPasswordModal(false); setSignaturePasswordValue(''); setPasswordError('') }}
             title="Confirmer la signature"
             size="md"
             overlayClassName="z-[100]"
           >
-            <form onSubmit={handlePinSubmit} className="space-y-4">
-              <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-50 dark:bg-amber-900/20 border-2 border-amber-200 dark:border-amber-800/50">
+            <form onSubmit={handlePasswordSubmit} className="space-y-4">
+              <div className="flex items-start gap-3 p-4 rounded-xl bg-[#006020]/5 dark:bg-emerald-500/10 border-2 border-[#006020]/20 dark:border-emerald-500/20">
                 <div className="shrink-0">
-                  <Shield size={24} className="text-amber-600 dark:text-amber-400" />
+                  <Shield size={24} className="text-[#006020] dark:text-emerald-400" />
                 </div>
                 <div>
                   <p className="text-base font-semibold text-gray-900 dark:text-white">
-                    Saisissez votre code PIN pour confirmer la signature et la transmission au Service Gestion.
+                    Saisissez votre mot de passe pour confirmer la signature et la transmission au Service Gestion.
                   </p>
                   <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                    Code à 4-6 chiffres défini dans votre profil.
+                    Cette étape permet de vérifier votre identité avant de signer la facture.
                   </p>
                 </div>
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                  PIN de confirmation
+                  Mot de passe
                 </label>
-                <input
-                  type="password"
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  maxLength={6}
-                  value={signaturePinValue}
-                  onChange={(e) => { setSignaturePinValue(e.target.value.replace(/\D/g, '')); setPinError('') }}
-                  className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#006020]/20 focus:border-[#006020]"
-                  placeholder="Saisir le PIN (4 à 6 chiffres)"
-                  autoFocus
-                />
-                {pinError && (
-                  <p className="mt-1.5 text-sm text-red-600 dark:text-red-400">{pinError}</p>
+                <div className="relative group">
+                  <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#006020] dark:group-focus-within:text-emerald-400 pointer-events-none" />
+                  <input
+                    type={showSignaturePassword ? 'text' : 'password'}
+                    value={signaturePasswordValue}
+                    onChange={(e) => { setSignaturePasswordValue(e.target.value); setPasswordError('') }}
+                    className="w-full pl-11 pr-12 py-3 rounded-lg border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#006020]/20 focus:border-[#006020] dark:focus:border-emerald-500"
+                    placeholder="Votre mot de passe"
+                    autoFocus
+                    autoComplete="current-password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowSignaturePassword(!showSignaturePassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-lg text-gray-400 hover:text-[#006020] dark:hover:text-emerald-400"
+                    aria-label={showSignaturePassword ? 'Masquer' : 'Afficher'}
+                  >
+                    {showSignaturePassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+                {passwordError && (
+                  <p className="mt-1.5 text-sm text-red-600 dark:text-red-400">{passwordError}</p>
                 )}
               </div>
               <div className="flex justify-end gap-2 pt-2">
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => { setShowPinModal(false); setSignaturePinValue(''); setPinError('') }}
+                  onClick={() => { setShowPasswordModal(false); setSignaturePasswordValue(''); setPasswordError('') }}
                 >
                   Annuler
                 </Button>
                 <Button
                   type="submit"
                   variant="primary"
-                  disabled={actionLoadingId === String(selectedInvoiceId) || !signaturePinValue || signaturePinValue.length < 4}
+                  disabled={actionLoadingId === String(selectedInvoiceId) || !signaturePasswordValue || signaturePasswordValue.length < 6}
                 >
                   {actionLoadingId === String(selectedInvoiceId) ? (
                     <>

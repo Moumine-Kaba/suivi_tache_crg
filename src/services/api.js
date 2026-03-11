@@ -3544,7 +3544,7 @@ export const invoicesService = {
     return invoice
   },
 
-  signAndTransmit: async (id, { signatureName, stampLabel, stampImage, signaturePin }) => {
+  signAndTransmit: async (id, { signatureName, stampLabel, stampImage, signaturePassword }) => {
     const authUser = await ensureAuthUser()
     const { data: userProfile } = await supabase
       .from('users')
@@ -3558,15 +3558,17 @@ export const invoicesService = {
       throw new Error('Seul le directeur/directrice ou l\'admin peut signer une facture.')
     }
 
-    // SÉCURITÉ : Le directeur/admin DOIT avoir un PIN défini pour signer
-    const hasPin = await usersService.hasSignaturePin()
-    if (!hasPin) {
-      throw new Error('Vous devez définir votre PIN de signature dans votre profil avant de pouvoir signer des factures.')
+    // SÉCURITÉ : Vérification du mot de passe pour confirmer l'identité
+    if (!signaturePassword || String(signaturePassword).trim().length < 6) {
+      throw new Error('Mot de passe requis pour confirmer la signature.')
     }
-    if (!signaturePin || String(signaturePin).trim().length < 4) {
-      throw new Error('PIN de signature requis (4 à 6 chiffres).')
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: authUser.email,
+      password: String(signaturePassword).trim(),
+    })
+    if (signInError) {
+      throw new Error('Mot de passe incorrect.')
     }
-    await usersService.verifySignaturePin(signaturePin)
 
     // Récupérer la facture avant signature
     const { data: invoiceRow, error: fetchError } = await supabase
