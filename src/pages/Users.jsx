@@ -578,11 +578,9 @@ export default function Users() {
         }}
         title={editingUser ? 'Modifier l\'utilisateur' : 'Nouvel utilisateur'}
         size="xl"
-        disableBodyScroll
         align="top"
-        className="max-h-none overflow-visible"
       >
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
           {/* En-tête avec icône */}
           <div className="flex items-center gap-3 pb-3 border-b border-gray-200 dark:border-gray-700">
             <div className="p-3 bg-gradient-to-br from-crg-primary to-crg-secondary rounded-xl shadow-lg">
